@@ -64,6 +64,7 @@
         .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
         .overflow-hidden { overflow: hidden; }
+        .overflow-y-auto { overflow-y: auto; }
         .min-h-0 { min-height: 0; }
         .inline { display: inline; }
         .relative { position: relative; }
@@ -161,10 +162,6 @@
             background: linear-gradient(to top, rgba(30, 58, 138, 0.5), transparent);
         }
 
-        .hourly-grid {
-            height: calc(100% - 3rem);
-        }
-
         svg {
             display: inline-block;
             vertical-align: middle;
@@ -204,8 +201,31 @@
 
         .chart-container {
             position: relative;
-            height: 100%;
+            height: 250px;
             width: 100%;
+        }
+
+        .main-content {
+            height: calc(100vh - 100px);
+            overflow-y: auto;
+        }
+
+        .main-content::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .main-content::-webkit-scrollbar-track {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 10px;
+        }
+
+        .main-content::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.5);
         }
     </style>
 </head>
@@ -260,69 +280,71 @@
                 </div>
             </div>
 
-            <div id="dashboard-view" class="flex-1 grid grid-cols-12 gap-3 min-h-0">
-                <div class="col-span-3 flex flex-col gap-3">
-                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
-                        <div class="flex items-center justify-between mb-2">
-                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                            </svg>
-                            <span class="text-white-70 text-xs font-semibold">TEMPERATURA</span>
+            <div id="dashboard-view" class="main-content">
+                <div class="grid grid-cols-12 gap-3 mb-3">
+                    <div class="col-span-3 flex flex-col gap-3">
+                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
+                            <div class="flex items-center justify-between mb-2">
+                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                                </svg>
+                                <span class="text-white-70 text-xs font-semibold">TEMPERATURA</span>
+                            </div>
+                            <div class="text-white">
+                                <div class="text-5xl font-bold" id="temp-value">--°</div>
+                                <div class="text-lg opacity-80">Celsius</div>
+                            </div>
                         </div>
-                        <div class="text-white">
-                            <div class="text-5xl font-bold" id="temp-value">--°</div>
-                            <div class="text-lg opacity-80">Celsius</div>
+
+                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
+                            <div class="flex items-center justify-between mb-2">
+                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                                </svg>
+                                <span class="text-white-70 text-xs font-semibold">HUMEDAD</span>
+                            </div>
+                            <div class="text-white">
+                                <div class="text-5xl font-bold" id="humidity-value">--%</div>
+                                <div class="text-lg opacity-80">Relativa</div>
+                            </div>
+                        </div>
+
+                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
+                            <div class="flex items-center justify-between mb-2">
+                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                                    <path d="M16 14v6m-4-6v6m-4-6v6"></path>
+                                </svg>
+                                <span class="text-white-70 text-xs font-semibold">PRECIPITACIÓN</span>
+                            </div>
+                            <div class="text-white">
+                                <div class="text-5xl font-bold" id="precip-value">--</div>
+                                <div class="text-lg opacity-80" id="precip-prob">Prob. --%</div>
+                            </div>
                         </div>
                     </div>
 
-                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
-                        <div class="flex items-center justify-between mb-2">
-                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-                            </svg>
-                            <span class="text-white-70 text-xs font-semibold">HUMEDAD</span>
-                        </div>
-                        <div class="text-white">
-                            <div class="text-5xl font-bold" id="humidity-value">--%</div>
-                            <div class="text-lg opacity-80">Relativa</div>
-                        </div>
-                    </div>
-
-                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
-                        <div class="flex items-center justify-between mb-2">
-                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-                                <path d="M16 14v6m-4-6v6m-4-6v6"></path>
-                            </svg>
-                            <span class="text-white-70 text-xs font-semibold">PRECIPITACIÓN</span>
-                        </div>
-                        <div class="text-white">
-                            <div class="text-5xl font-bold" id="precip-value">--</div>
-                            <div class="text-lg opacity-80" id="precip-prob">Prob. --%</div>
+                    <div class="col-span-9 flex flex-col gap-3">
+                        <div class="bg-glass rounded-2xl p-4 shadow-xl">
+                            <h2 class="text-white text-xl font-bold mb-3">Pronóstico Extendido</h2>
+                            <div class="grid grid-cols-5 gap-3" id="forecast-days"></div>
                         </div>
                     </div>
                 </div>
 
-                <div class="col-span-9 flex flex-col gap-3">
-                    <div class="bg-glass rounded-2xl p-4 shadow-xl">
-                        <h2 class="text-white text-xl font-bold mb-3">Pronóstico Extendido</h2>
-                        <div class="grid grid-cols-5 gap-3" id="forecast-days"></div>
-                    </div>
-
-                    <div class="bg-glass rounded-2xl p-4 shadow-xl flex-1">
-                        <h2 class="text-white text-xl font-bold mb-3">Gráficas Temporales</h2>
-                        <div class="grid grid-cols-2 gap-3" style="height: calc(100% - 3rem);">
-                            <div class="bg-glass rounded-xl p-3">
-                                <h3 class="text-white text-sm font-semibold mb-2">Temperatura por Día (°C)</h3>
-                                <div class="chart-container">
-                                    <canvas id="tempChart"></canvas>
-                                </div>
+                <div class="bg-glass rounded-2xl p-4 shadow-xl mb-3">
+                    <h2 class="text-white text-xl font-bold mb-4">📊 Gráficas Temporales</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-glass rounded-xl p-4">
+                            <h3 class="text-white text-base font-semibold mb-3">🌡️ Temperatura por Día (°C)</h3>
+                            <div class="chart-container">
+                                <canvas id="tempChart"></canvas>
                             </div>
-                            <div class="bg-glass rounded-xl p-3">
-                                <h3 class="text-white text-sm font-semibold mb-2">Humedad por Día (%)</h3>
-                                <div class="chart-container">
-                                    <canvas id="humidityChart"></canvas>
-                                </div>
+                        </div>
+                        <div class="bg-glass rounded-xl p-4">
+                            <h3 class="text-white text-base font-semibold mb-3">💧 Humedad por Día (%)</h3>
+                            <div class="chart-container">
+                                <canvas id="humidityChart"></canvas>
                             </div>
                         </div>
                     </div>
@@ -393,16 +415,17 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Temperatura',
+                        label: 'Temperatura (°C)',
                         data: temps,
                         borderColor: 'rgba(251, 191, 36, 1)',
                         backgroundColor: 'rgba(251, 191, 36, 0.2)',
                         tension: 0.4,
                         fill: true,
-                        pointRadius: 5,
+                        pointRadius: 6,
                         pointBackgroundColor: 'rgba(251, 191, 36, 1)',
                         pointBorderColor: '#fff',
-                        pointBorderWidth: 2
+                        pointBorderWidth: 2,
+                        pointHoverRadius: 8
                     }]
                 },
                 options: {
@@ -411,6 +434,17 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '°C';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -418,8 +452,11 @@
                             beginAtZero: false,
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 12
+                                },
                                 callback: function(value) {
-                                    return value + '°C';
+                                    return value + '°';
                                 }
                             },
                             grid: {
@@ -428,7 +465,10 @@
                         },
                         x: {
                             ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)'
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 11
+                                }
                             },
                             grid: {
                                 color: 'rgba(255, 255, 255, 0.1)'
@@ -446,9 +486,9 @@
                 data: {
                     labels: labels,
                     datasets: [{
-                        label: 'Humedad',
+                        label: 'Humedad (%)',
                         data: humidity,
-                        backgroundColor: 'rgba(59, 130, 246, 0.8)',
+                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
                         borderColor: 'rgba(59, 130, 246, 1)',
                         borderWidth: 2,
                         borderRadius: 8
@@ -460,6 +500,17 @@
                     plugins: {
                         legend: {
                             display: false
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            padding: 12,
+                            titleColor: '#fff',
+                            bodyColor: '#fff',
+                            callbacks: {
+                                label: function(context) {
+                                    return context.parsed.y + '%';
+                                }
+                            }
                         }
                     },
                     scales: {
@@ -468,6 +519,9 @@
                             max: 100,
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 12
+                                },
                                 callback: function(value) {
                                     return value + '%';
                                 }
@@ -478,7 +532,10 @@
                         },
                         x: {
                             ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)'
+                                color: 'rgba(255, 255, 255, 0.8)',
+                                font: {
+                                    size: 11
+                                }
                             },
                             grid: {
                                 color: 'rgba(255, 255, 255, 0.1)'
