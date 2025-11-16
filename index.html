@@ -219,8 +219,10 @@
     <div id="loading" class="loading bg-gradient">
         <div class="text-center">
             <div class="mb-3">🌤️ Cargando datos del clima...</div>
-            <div class="text-sm opacity-75">Leyendo: weather_data.csv</div>
+            <div class="text-sm opacity-75">Intentando cargar: weather_data.csv</div>
             <div id="error-container"></div>
+            <input type="file" id="file-upload" accept=".csv" />
+            <div class="text-sm opacity-75" style="margin-top: 0.5rem;">O selecciona manualmente el archivo CSV</div>
         </div>
     </div>
 
@@ -265,6 +267,24 @@
             </div>
 
             <div id="dashboard-view" class="main-content">
+                <div class="bg-glass rounded-2xl p-4 shadow-xl mb-3">
+                    <h2 class="text-white text-xl font-bold mb-4">📊 Gráficas Temporales</h2>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-glass rounded-xl p-4">
+                            <h3 class="text-white text-base font-semibold mb-3">🌡️ Temperatura por Día (°C)</h3>
+                            <div class="chart-container">
+                                <canvas id="tempChart"></canvas>
+                            </div>
+                        </div>
+                        <div class="bg-glass rounded-xl p-4">
+                            <h3 class="text-white text-base font-semibold mb-3">💧 Humedad por Día (%)</h3>
+                            <div class="chart-container">
+                                <canvas id="humidityChart"></canvas>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
                 <div class="grid grid-cols-12 gap-3 mb-3">
                     <div class="col-span-3 flex flex-col gap-3">
                         <div class="bg-glass rounded-2xl p-5 shadow-xl">
@@ -312,24 +332,6 @@
                         <div class="bg-glass rounded-2xl p-4 shadow-xl">
                             <h2 class="text-white text-xl font-bold mb-3">Pronóstico Extendido</h2>
                             <div class="grid grid-cols-5 gap-3" id="forecast-days"></div>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="bg-glass rounded-2xl p-4 shadow-xl mb-3">
-                    <h2 class="text-white text-xl font-bold mb-4">📊 Gráficas Temporales</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-glass rounded-xl p-4">
-                            <h3 class="text-white text-base font-semibold mb-3">🌡️ Temperatura por Día (°C)</h3>
-                            <div class="chart-container">
-                                <canvas id="tempChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-glass rounded-xl p-4">
-                            <h3 class="text-white text-base font-semibold mb-3">💧 Humedad por Día (%)</h3>
-                            <div class="chart-container">
-                                <canvas id="humidityChart"></canvas>
-                            </div>
                         </div>
                     </div>
                 </div>
