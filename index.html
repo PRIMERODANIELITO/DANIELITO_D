@@ -176,20 +176,6 @@
             color: white;
         }
 
-        #file-upload {
-            margin: 1rem;
-            padding: 0.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 0.5rem;
-            color: white;
-            cursor: pointer;
-        }
-
-        #file-upload:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
         .error-message {
             color: #ff6b6b;
             background: rgba(255, 107, 107, 0.1);
@@ -233,10 +219,8 @@
     <div id="loading" class="loading bg-gradient">
         <div class="text-center">
             <div class="mb-3">🌤️ Cargando datos del clima...</div>
-            <div class="text-sm opacity-75">Intentando cargar: weather_data.csv</div>
+            <div class="text-sm opacity-75">Leyendo: weather_data.csv</div>
             <div id="error-container"></div>
-            <input type="file" id="file-upload" accept=".csv" />
-            <div class="text-sm opacity-75" style="margin-top: 0.5rem;">O selecciona manualmente el archivo CSV</div>
         </div>
     </div>
 
@@ -407,7 +391,6 @@
             const temps = forecast.map(d => d.temp);
             const humidity = forecast.map(d => d.humidity);
 
-            // Temperatura - Gráfica de línea
             const tempCtx = document.getElementById('tempChart').getContext('2d');
             if (tempChart) tempChart.destroy();
             tempChart = new Chart(tempCtx, {
@@ -432,9 +415,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             padding: 12,
@@ -452,33 +433,24 @@
                             beginAtZero: false,
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 12
-                                },
+                                font: { size: 12 },
                                 callback: function(value) {
                                     return value + '°';
                                 }
                             },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         },
                         x: {
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 11
-                                }
+                                font: { size: 11 }
                             },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
                     }
                 }
             });
 
-            // Humedad - Gráfica de barras
             const humidityCtx = document.getElementById('humidityChart').getContext('2d');
             if (humidityChart) humidityChart.destroy();
             humidityChart = new Chart(humidityCtx, {
@@ -498,9 +470,7 @@
                     responsive: true,
                     maintainAspectRatio: false,
                     plugins: {
-                        legend: {
-                            display: false
-                        },
+                        legend: { display: false },
                         tooltip: {
                             backgroundColor: 'rgba(0, 0, 0, 0.8)',
                             padding: 12,
@@ -519,27 +489,19 @@
                             max: 100,
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 12
-                                },
+                                font: { size: 12 },
                                 callback: function(value) {
                                     return value + '%';
                                 }
                             },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         },
                         x: {
                             ticks: {
                                 color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 11
-                                }
+                                font: { size: 11 }
                             },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
+                            grid: { color: 'rgba(255, 255, 255, 0.1)' }
                         }
                     }
                 }
@@ -551,36 +513,18 @@
             errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
         }
 
-        function loadCSVFromURL(url) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('No se pudo cargar el archivo CSV');
-                    }
-                    return response.text();
-                })
-                .then(csvText => {
-                    parseCSV(csvText);
-                })
-                .catch(error => {
-                    console.error('Error cargando CSV:', error);
-                    showError('No se pudo cargar weather_data.csv. Por favor, selecciona el archivo manualmente.');
-                });
+        async function loadCSVFromFile() {
+            try {
+                const csvText = await window.fs.readFile('/workspaces/DANIELITO_D/weather_data.csv', { encoding: 'utf8' });
+                parseCSV(csvText);
+            } catch (error) {
+                console.error('Error leyendo CSV:', error);
+                showError(`No se pudo cargar el archivo CSV: ${error.message}`);
+            }
         }
 
         window.addEventListener('load', function() {
-            loadCSVFromURL('weather_data.csv');
-        });
-
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    parseCSV(event.target.result);
-                };
-                reader.readAsText(file);
-            }
+            loadCSVFromFile();
         });
 
         document.getElementById('reload-csv').addEventListener('click', function() {
