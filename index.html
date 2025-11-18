@@ -4,8 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pronóstico del Tiempo - UNALM</title>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.min.js"></script>
     <style>
         * {
             margin: 0;
@@ -29,7 +27,6 @@
         .justify-between { justify-content: space-between; }
         .gap-3 { gap: 0.75rem; }
         .grid { display: grid; }
-        .grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
         .grid-cols-5 { grid-template-columns: repeat(5, minmax(0, 1fr)); }
         .grid-cols-12 { grid-template-columns: repeat(12, minmax(0, 1fr)); }
         .col-span-3 { grid-column: span 3 / span 3; }
@@ -64,7 +61,6 @@
         .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05); }
         .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); }
         .overflow-hidden { overflow: hidden; }
-        .overflow-y-auto { overflow-y: auto; }
         .min-h-0 { min-height: 0; }
         .inline { display: inline; }
         .relative { position: relative; }
@@ -162,85 +158,18 @@
             background: linear-gradient(to top, rgba(30, 58, 138, 0.5), transparent);
         }
 
+        .hourly-grid {
+            height: calc(100% - 3rem);
+        }
+
         svg {
             display: inline-block;
             vertical-align: middle;
         }
-
-        .loading {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            font-size: 1.5rem;
-            color: white;
-        }
-
-        #file-upload {
-            margin: 1rem;
-            padding: 0.5rem;
-            background: rgba(255, 255, 255, 0.2);
-            border: 2px dashed rgba(255, 255, 255, 0.5);
-            border-radius: 0.5rem;
-            color: white;
-            cursor: pointer;
-        }
-
-        #file-upload:hover {
-            background: rgba(255, 255, 255, 0.3);
-        }
-
-        .error-message {
-            color: #ff6b6b;
-            background: rgba(255, 107, 107, 0.1);
-            padding: 1rem;
-            border-radius: 0.5rem;
-            margin-top: 1rem;
-            border: 1px solid rgba(255, 107, 107, 0.3);
-        }
-
-        .chart-container {
-            position: relative;
-            height: 250px;
-            width: 100%;
-        }
-
-        .main-content {
-            height: calc(100vh - 100px);
-            overflow-y: auto;
-        }
-
-        .main-content::-webkit-scrollbar {
-            width: 8px;
-        }
-
-        .main-content::-webkit-scrollbar-track {
-            background: rgba(255, 255, 255, 0.1);
-            border-radius: 10px;
-        }
-
-        .main-content::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.3);
-            border-radius: 10px;
-        }
-
-        .main-content::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.5);
-        }
     </style>
 </head>
 <body>
-    <div id="loading" class="loading bg-gradient">
-        <div class="text-center">
-            <div class="mb-3">🌤️ Cargando datos del clima...</div>
-            <div class="text-sm opacity-75">Intentando cargar: weather_data.csv</div>
-            <div id="error-container"></div>
-            <input type="file" id="file-upload" accept=".csv" />
-            <div class="text-sm opacity-75" style="margin-top: 0.5rem;">O selecciona manualmente el archivo CSV</div>
-        </div>
-    </div>
-
-    <div id="app" class="h-screen w-screen bg-gradient p-4 overflow-hidden hidden">
+    <div id="app" class="h-screen w-screen bg-gradient p-4 overflow-hidden">
         <div class="h-full flex flex-col">
             <div class="text-white mb-3">
                 <div class="flex justify-between items-center">
@@ -248,20 +177,12 @@
                         <h1 class="text-3xl font-bold">Pronóstico del Tiempo - UNALM</h1>
                         <p class="text-sm opacity-75" id="current-datetime"></p>
                     </div>
-                    <div class="flex gap-3">
-                        <button
-                            id="reload-csv"
-                            class="bg-glass-button px-6 py-2 rounded-xl font-semibold transition-all transform shadow-lg"
-                        >
-                            🔄 Recargar CSV
-                        </button>
-                        <button
-                            id="toggle-view"
-                            class="bg-glass-button px-6 py-2 rounded-xl font-semibold transition-all transform shadow-lg"
-                        >
-                            🌤️ Ver el Cielo
-                        </button>
-                    </div>
+                    <button
+                        id="toggle-view"
+                        class="bg-glass-button px-6 py-2 rounded-xl font-semibold transition-all transform shadow-lg"
+                    >
+                        🌤️ Ver el Cielo
+                    </button>
                 </div>
             </div>
 
@@ -280,73 +201,58 @@
                 </div>
             </div>
 
-            <div id="dashboard-view" class="main-content">
-                <div class="grid grid-cols-12 gap-3 mb-3">
-                    <div class="col-span-3 flex flex-col gap-3">
-                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
-                            <div class="flex items-center justify-between mb-2">
-                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
-                                </svg>
-                                <span class="text-white-70 text-xs font-semibold">TEMPERATURA</span>
-                            </div>
-                            <div class="text-white">
-                                <div class="text-5xl font-bold" id="temp-value">--°</div>
-                                <div class="text-lg opacity-80">Celsius</div>
-                            </div>
+            <div id="dashboard-view" class="flex-1 grid grid-cols-12 gap-3 min-h-0">
+                <div class="col-span-3 flex flex-col gap-3">
+                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
+                        <div class="flex items-center justify-between mb-2">
+                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 14.76V3.5a2.5 2.5 0 0 0-5 0v11.26a4.5 4.5 0 1 0 5 0z"></path>
+                            </svg>
+                            <span class="text-white-70 text-xs font-semibold">TEMPERATURA</span>
                         </div>
-
-                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
-                            <div class="flex items-center justify-between mb-2">
-                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
-                                </svg>
-                                <span class="text-white-70 text-xs font-semibold">HUMEDAD</span>
-                            </div>
-                            <div class="text-white">
-                                <div class="text-5xl font-bold" id="humidity-value">--%</div>
-                                <div class="text-lg opacity-80">Relativa</div>
-                            </div>
-                        </div>
-
-                        <div class="bg-glass rounded-2xl p-5 shadow-xl">
-                            <div class="flex items-center justify-between mb-2">
-                                <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                                    <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
-                                    <path d="M16 14v6m-4-6v6m-4-6v6"></path>
-                                </svg>
-                                <span class="text-white-70 text-xs font-semibold">PRECIPITACIÓN</span>
-                            </div>
-                            <div class="text-white">
-                                <div class="text-5xl font-bold" id="precip-value">--</div>
-                                <div class="text-lg opacity-80" id="precip-prob">Prob. --%</div>
-                            </div>
+                        <div class="text-white">
+                            <div class="text-5xl font-bold" id="temp-value">24°</div>
+                            <div class="text-lg opacity-80">Celsius</div>
                         </div>
                     </div>
 
-                    <div class="col-span-9 flex flex-col gap-3">
-                        <div class="bg-glass rounded-2xl p-4 shadow-xl">
-                            <h2 class="text-white text-xl font-bold mb-3">Pronóstico Extendido</h2>
-                            <div class="grid grid-cols-5 gap-3" id="forecast-days"></div>
+                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
+                        <div class="flex items-center justify-between mb-2">
+                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                            </svg>
+                            <span class="text-white-70 text-xs font-semibold">HUMEDAD</span>
+                        </div>
+                        <div class="text-white">
+                            <div class="text-5xl font-bold" id="humidity-value">68%</div>
+                            <div class="text-lg opacity-80">Relativa</div>
+                        </div>
+                    </div>
+
+                    <div class="bg-glass rounded-2xl p-5 shadow-xl flex-1 flex flex-col justify-center">
+                        <div class="flex items-center justify-between mb-2">
+                            <svg class="text-white" width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path>
+                                <path d="M16 14v6m-4-6v6m-4-6v6"></path>
+                            </svg>
+                            <span class="text-white-70 text-xs font-semibold">PRECIPITACIÓN</span>
+                        </div>
+                        <div class="text-white">
+                            <div class="text-5xl font-bold" id="precip-value">SÍ</div>
+                            <div class="text-lg opacity-80" id="precip-prob">Prob. 75%</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="bg-glass rounded-2xl p-4 shadow-xl mb-3">
-                    <h2 class="text-white text-xl font-bold mb-4">📊 Gráficas Temporales</h2>
-                    <div class="grid grid-cols-2 gap-4">
-                        <div class="bg-glass rounded-xl p-4">
-                            <h3 class="text-white text-base font-semibold mb-3">🌡️ Temperatura por Día (°C)</h3>
-                            <div class="chart-container">
-                                <canvas id="tempChart"></canvas>
-                            </div>
-                        </div>
-                        <div class="bg-glass rounded-xl p-4">
-                            <h3 class="text-white text-base font-semibold mb-3">💧 Humedad por Día (%)</h3>
-                            <div class="chart-container">
-                                <canvas id="humidityChart"></canvas>
-                            </div>
-                        </div>
+                <div class="col-span-9 flex flex-col gap-3">
+                    <div class="bg-glass rounded-2xl p-4 shadow-xl">
+                        <h2 class="text-white text-xl font-bold mb-3">Pronóstico Extendido</h2>
+                        <div class="grid grid-cols-5 gap-3" id="forecast-days"></div>
+                    </div>
+
+                    <div class="bg-glass rounded-2xl p-4 shadow-xl flex-1">
+                        <h2 class="text-white text-xl font-bold mb-3">Pronóstico por Hora - <span id="selected-day-name">Hoy</span></h2>
+                        <div class="grid grid-cols-5 gap-3 hourly-grid" id="hourly-forecast"></div>
                     </div>
                 </div>
             </div>
@@ -354,238 +260,91 @@
     </div>
 
     <script>
-        let forecast = [];
+        const forecast = [
+            {
+                day: 'Hoy',
+                date: 'Nov 15',
+                temp: 24,
+                humidity: 68,
+                precipitation: true,
+                precipProb: 75,
+                icon: 'rain',
+                hourly: [
+                    { hour: '09:00', temp: 20, humidity: 72, precip: true },
+                    { hour: '12:00', temp: 23, humidity: 70, precip: true },
+                    { hour: '15:00', temp: 24, humidity: 68, precip: false },
+                    { hour: '18:00', temp: 22, humidity: 73, precip: true },
+                    { hour: '21:00', temp: 19, humidity: 78, precip: true },
+                ]
+            },
+            {
+                day: 'Mañana',
+                date: 'Nov 16',
+                temp: 26,
+                humidity: 55,
+                precipitation: false,
+                precipProb: 20,
+                icon: 'sun',
+                hourly: [
+                    { hour: '09:00', temp: 21, humidity: 60, precip: false },
+                    { hour: '12:00', temp: 25, humidity: 56, precip: false },
+                    { hour: '15:00', temp: 26, humidity: 55, precip: false },
+                    { hour: '18:00', temp: 24, humidity: 58, precip: false },
+                    { hour: '21:00', temp: 21, humidity: 62, precip: false },
+                ]
+            },
+            {
+                day: 'Dom',
+                date: 'Nov 17',
+                temp: 25,
+                humidity: 62,
+                precipitation: true,
+                precipProb: 45,
+                icon: 'cloudy',
+                hourly: [
+                    { hour: '09:00', temp: 21, humidity: 65, precip: false },
+                    { hour: '12:00', temp: 24, humidity: 63, precip: true },
+                    { hour: '15:00', temp: 25, humidity: 62, precip: true },
+                    { hour: '18:00', temp: 23, humidity: 66, precip: false },
+                    { hour: '21:00', temp: 20, humidity: 70, precip: false },
+                ]
+            },
+            {
+                day: 'Lun',
+                date: 'Nov 18',
+                temp: 27,
+                humidity: 50,
+                precipitation: false,
+                precipProb: 10,
+                icon: 'sun',
+                hourly: [
+                    { hour: '09:00', temp: 22, humidity: 55, precip: false },
+                    { hour: '12:00', temp: 26, humidity: 51, precip: false },
+                    { hour: '15:00', temp: 27, humidity: 50, precip: false },
+                    { hour: '18:00', temp: 25, humidity: 53, precip: false },
+                    { hour: '21:00', temp: 22, humidity: 58, precip: false },
+                ]
+            },
+            {
+                day: 'Mar',
+                date: 'Nov 19',
+                temp: 23,
+                humidity: 70,
+                precipitation: true,
+                precipProb: 80,
+                icon: 'rain',
+                hourly: [
+                    { hour: '09:00', temp: 20, humidity: 75, precip: true },
+                    { hour: '12:00', temp: 22, humidity: 72, precip: true },
+                    { hour: '15:00', temp: 23, humidity: 70, precip: true },
+                    { hour: '18:00', temp: 21, humidity: 76, precip: true },
+                    { hour: '21:00', temp: 19, humidity: 80, precip: true },
+                ]
+            },
+        ];
+
         let selectedDay = 0;
         let showSky = false;
-        let tempChart = null;
-        let humidityChart = null;
-
-        function parseBool(value) {
-            return value === 'true' || value === 'TRUE' || value === '1' || value === 1;
-        }
-
-        function parseCSV(csvText) {
-            Papa.parse(csvText, {
-                header: true,
-                dynamicTyping: true,
-                skipEmptyLines: true,
-                complete: function(results) {
-                    forecast = results.data.map(row => ({
-                        day: row.day,
-                        date: row.date,
-                        temp: parseInt(row.temp),
-                        humidity: parseInt(row.humidity),
-                        precipitation: parseBool(row.precipitation),
-                        precipProb: parseInt(row.precipProb),
-                        icon: row.icon,
-                        hourly: [
-                            { hour: '09:00', temp: parseInt(row.h09_temp), humidity: parseInt(row.h09_humidity), precip: parseBool(row.h09_precip) },
-                            { hour: '12:00', temp: parseInt(row.h12_temp), humidity: parseInt(row.h12_humidity), precip: parseBool(row.h12_precip) },
-                            { hour: '15:00', temp: parseInt(row.h15_temp), humidity: parseInt(row.h15_humidity), precip: parseBool(row.h15_precip) },
-                            { hour: '18:00', temp: parseInt(row.h18_temp), humidity: parseInt(row.h18_humidity), precip: parseBool(row.h18_precip) },
-                            { hour: '21:00', temp: parseInt(row.h21_temp), humidity: parseInt(row.h21_humidity), precip: parseBool(row.h21_precip) },
-                        ]
-                    }));
-
-                    if (forecast.length > 0) {
-                        document.getElementById('loading').classList.add('hidden');
-                        document.getElementById('app').classList.remove('hidden');
-                        updateDashboard();
-                        createCharts();
-                    } else {
-                        showError('No se encontraron datos en el CSV');
-                    }
-                },
-                error: function(error) {
-                    showError('Error al parsear el CSV: ' + error.message);
-                }
-            });
-        }
-
-        function createCharts() {
-            const labels = forecast.map(d => d.date);
-            const temps = forecast.map(d => d.temp);
-            const humidity = forecast.map(d => d.humidity);
-
-            // Temperatura - Gráfica de línea
-            const tempCtx = document.getElementById('tempChart').getContext('2d');
-            if (tempChart) tempChart.destroy();
-            tempChart = new Chart(tempCtx, {
-                type: 'line',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Temperatura (°C)',
-                        data: temps,
-                        borderColor: 'rgba(251, 191, 36, 1)',
-                        backgroundColor: 'rgba(251, 191, 36, 0.2)',
-                        tension: 0.4,
-                        fill: true,
-                        pointRadius: 6,
-                        pointBackgroundColor: 'rgba(251, 191, 36, 1)',
-                        pointBorderColor: '#fff',
-                        pointBorderWidth: 2,
-                        pointHoverRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + '°C';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: false,
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 12
-                                },
-                                callback: function(value) {
-                                    return value + '°';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 11
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    }
-                }
-            });
-
-            // Humedad - Gráfica de barras
-            const humidityCtx = document.getElementById('humidityChart').getContext('2d');
-            if (humidityChart) humidityChart.destroy();
-            humidityChart = new Chart(humidityCtx, {
-                type: 'bar',
-                data: {
-                    labels: labels,
-                    datasets: [{
-                        label: 'Humedad (%)',
-                        data: humidity,
-                        backgroundColor: 'rgba(59, 130, 246, 0.7)',
-                        borderColor: 'rgba(59, 130, 246, 1)',
-                        borderWidth: 2,
-                        borderRadius: 8
-                    }]
-                },
-                options: {
-                    responsive: true,
-                    maintainAspectRatio: false,
-                    plugins: {
-                        legend: {
-                            display: false
-                        },
-                        tooltip: {
-                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
-                            padding: 12,
-                            titleColor: '#fff',
-                            bodyColor: '#fff',
-                            callbacks: {
-                                label: function(context) {
-                                    return context.parsed.y + '%';
-                                }
-                            }
-                        }
-                    },
-                    scales: {
-                        y: {
-                            beginAtZero: true,
-                            max: 100,
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 12
-                                },
-                                callback: function(value) {
-                                    return value + '%';
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        },
-                        x: {
-                            ticks: {
-                                color: 'rgba(255, 255, 255, 0.8)',
-                                font: {
-                                    size: 11
-                                }
-                            },
-                            grid: {
-                                color: 'rgba(255, 255, 255, 0.1)'
-                            }
-                        }
-                    }
-                }
-            });
-        }
-
-        function showError(message) {
-            const errorContainer = document.getElementById('error-container');
-            errorContainer.innerHTML = `<div class="error-message">${message}</div>`;
-        }
-
-        function loadCSVFromURL(url) {
-            fetch(url)
-                .then(response => {
-                    if (!response.ok) {
-                        throw new Error('No se pudo cargar el archivo CSV');
-                    }
-                    return response.text();
-                })
-                .then(csvText => {
-                    parseCSV(csvText);
-                })
-                .catch(error => {
-                    console.error('Error cargando CSV:', error);
-                    showError('No se pudo cargar weather_data.csv. Por favor, selecciona el archivo manualmente.');
-                });
-        }
-
-        window.addEventListener('load', function() {
-            loadCSVFromURL('weather_data.csv');
-        });
-
-        document.getElementById('file-upload').addEventListener('change', function(e) {
-            const file = e.target.files[0];
-            if (file) {
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    parseCSV(event.target.result);
-                };
-                reader.readAsText(file);
-            }
-        });
-
-        document.getElementById('reload-csv').addEventListener('click', function() {
-            location.reload();
-        });
 
         function getWeatherIcon(icon, size = 36) {
             const icons = {
@@ -605,17 +364,16 @@
         }
 
         function updateDashboard() {
-            if (forecast.length === 0) return;
-
             const selected = forecast[selectedDay];
             
             document.getElementById('temp-value').textContent = `${selected.temp}°`;
             document.getElementById('humidity-value').textContent = `${selected.humidity}%`;
             document.getElementById('precip-value').textContent = selected.precipitation ? 'SÍ' : 'NO';
             document.getElementById('precip-prob').textContent = `Prob. ${selected.precipProb}%`;
+            document.getElementById('selected-day-name').textContent = selected.day;
             
             const forecastDays = document.getElementById('forecast-days');
-            forecastDays.innerHTML = forecast.slice(0, 5).map((day, index) => `
+            forecastDays.innerHTML = forecast.map((day, index) => `
                 <button
                     onclick="selectDay(${index})"
                     class="day-card p-3 rounded-xl transition-all transform ${
@@ -643,6 +401,26 @@
                     </div>
                 </button>
             `).join('');
+            
+            const hourlyForecast = document.getElementById('hourly-forecast');
+            hourlyForecast.innerHTML = selected.hourly.map(hour => `
+                <div class="bg-glass rounded-xl p-3 text-center flex flex-col justify-center">
+                    <div class="text-white font-semibold mb-2 text-sm">${hour.hour}</div>
+                    <div class="flex justify-center mb-2">
+                        ${hour.precip 
+                            ? '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-blue-300"><path d="M4 14.899A7 7 0 1 1 15.71 8h1.79a4.5 4.5 0 0 1 2.5 8.242"></path><path d="M16 14v6m-4-6v6m-4-6v6"></path></svg>'
+                            : '<svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" class="text-yellow-300"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2m0 16v2M4.93 4.93l1.41 1.41m11.32 11.32l1.41 1.41M2 12h2m16 0h2M6.34 17.66l-1.41 1.41M19.07 4.93l-1.41 1.41"></path></svg>'
+                        }
+                    </div>
+                    <div class="text-white text-2xl font-bold mb-1">${hour.temp}°</div>
+                    <div class="text-white-80 text-xs flex items-center justify-center">
+                        <svg class="mr-1" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M12 2.69l5.66 5.66a8 8 0 1 1-11.31 0z"></path>
+                        </svg>
+                        ${hour.humidity}%
+                    </div>
+                </div>
+            `).join('');
         }
 
         function selectDay(index) {
@@ -669,8 +447,9 @@
 
         document.getElementById('toggle-view').addEventListener('click', toggleView);
 
-        setInterval(updateDateTime, 1000);
         updateDateTime();
+        setInterval(updateDateTime, 1000);
+        updateDashboard();
     </script>
 </body>
 </html>
